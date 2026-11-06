@@ -1,0 +1,47 @@
+{
+  "format": "dnd-market-content",
+  "version": 1,
+  "source": "Example homebrew",
+  "entries": [
+    {
+      "kind": "feat",
+      "name": "Guild Haggler",
+      "summary": "Proficiency in Persuasion and +1 to Persuasion and Deception.",
+      "effects": [
+        { "type": "proficiency", "skills": ["persuasion"], "level": "proficient" },
+        { "type": "bonus", "value": 1, "skills": ["persuasion", "deception"] }
+      ]
+    },
+    {
+      "kind": "subclass",
+      "name": "Merchant's Insight",
+      "summary": "Once per long rest, after failing a market check, add your Wisdom modifier.",
+      "uses": 1,
+      "effects": [{ "type": "bonus", "value": "wis", "timing": "reactive" }]
+    },
+    {
+      "kind": "item",
+      "name": "Ring of the Silver Purse",
+      "summary": "Advantage on Persuasion checks. 2 charges, used before rolling.",
+      "uses": 2,
+      "effects": [{ "type": "advantage", "skills": ["persuasion"], "timing": "pre" }]
+    },
+    {
+      "kind": "spell",
+      "name": "Coin of Fortune",
+      "summary": "Cast before a check: +1d6 to any Charisma check. 3 casts.",
+      "uses": 3,
+      "effects": [{ "type": "bonus", "value": "1d6", "skills": ["cha"], "timing": "pre" }]
+    },
+    {
+      "kind": "species",
+      "name": "Fey-touched Trader",
+      "summary": "Expertise in Investigation; a d20 of 7 or lower counts as 8 on Investigation.",
+      "effects": [
+        { "type": "proficiency", "skills": ["investigation"], "level": "expertise" },
+        { "type": "min-roll", "value": 8, "skills": ["investigation"] }
+      ]
+    },
+    { "kind": "feat", "name": "Lucky" }
+  ]
+}
