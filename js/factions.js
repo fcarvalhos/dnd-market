@@ -25,6 +25,15 @@ function defaults() {
   };
 }
 
+// The sheet hands numbers back as text ("100"), and "100" + 10 is "10010", which clamps to 100.
+export function normalize(s) {
+  s.ratio = Number(s.ratio) || 0;
+  for (const p of s.players) {
+    p.rep = Object.fromEntries(Object.entries(p.rep || {}).map(([k, v]) => [k, clamp(Number(v) || 0)]));
+  }
+  return s;
+}
+
 let el;
 let S = defaults();
 let tab = 'rep';
@@ -37,7 +46,7 @@ const off = () => (canEdit() ? '' : ' disabled title="Enter the DM key to edit"'
 async function load() {
   try {
     const d = await sheet(API);
-    if (d?.factions) S = { ...defaults(), ...d };
+    if (d?.factions) S = normalize({ ...defaults(), ...d });
     setStatus(el, canEdit() ? '● Synced with the Google Sheet' : '● Synced with the Google Sheet · read-only until you enter the DM key', 'ok');
   } catch (e) {
     setStatus(el, `● Could not reach the sheet: ${e.message}`, 'bad');

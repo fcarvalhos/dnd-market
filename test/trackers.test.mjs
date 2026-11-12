@@ -1,7 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { levelOf, progress } from '../js/xp.js';
-import { tier } from '../js/factions.js';
+import { tier, normalize } from '../js/factions.js';
+
+test('reputation read from the sheet as text becomes numbers', () => {
+  const s = normalize({ ratio: '45', players: [{ rep: { a: '100', b: '-27.5', c: '' } }] });
+  assert.deepEqual(s, { ratio: 45, players: [{ rep: { a: 100, b: -27.5, c: 0 } }] });
+});
 
 test('level thresholds', () => {
   assert.equal(levelOf(0), 1);
