@@ -18,6 +18,9 @@ Static site: plain HTML, CSS and JS modules with no build step and no dataset. E
 - **Odds preview** from thousands of simulated rolls, with a chart of search bonus vs. chance so you can see how much gold is worth spending.
 - **Homebrew JSON upload** for classes, subclasses, heritages, feats, items and spells. Files from the `dnd-sheet` app are accepted too.
 - **Discord** via a channel webhook. Each post shows the objective, every die, the modifiers and the abilities used.
+- **Experience section:** the party roster with level progress bars, session XP awards and the session log. It syncs with the XP tracker's Google Sheet (`js/xp.js`).
+- **Factions section:** reputation per adventurer, faction relations with ripple effects and a chronicle. It syncs with the faction tracker's Google Sheet (`js/factions.js`), and the Company can be imported from the XP roster.
+- **DM keys:** both sheets are read-only until the DM enters the key with the *DM key* button. Keys are stored in the browser, never in the code.
 - **Ledger** of every roll, with *Copy record* in the table's registration template.
 
 ## Deploy to GitHub Pages
@@ -75,7 +78,7 @@ See [`examples/market-homebrew-example.json`](examples/market-homebrew-example.j
 ## Development
 
 ```bash
-npm test                     # engine unit tests (Node 20+)
+npm test                     # unit tests (Node 20+)
 python -m http.server 5510   # then open http://localhost:5510
 ```
 

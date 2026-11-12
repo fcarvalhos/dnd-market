@@ -2,10 +2,12 @@ import { RARITIES, rarityOf, searchBonus, staticModifier, SKILLS, SKILL_LABEL, A
 import { BUILTIN, defaultMax, parseHomebrew, describeEffect } from './abilities.js';
 import { MODES, runFlow, estimateFlow, buildRecord, recordText, isMagicSale } from './flows.js';
 import { isWebhook, postRecord, postTest } from './discord.js';
+import { esc, toast } from './sheet.js';
+import * as xp from './xp.js';
+import * as factions from './factions.js';
 
 const KEY = 'gilded-ledger-v1';
 const $ = (s) => document.querySelector(s);
-const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const localToday = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
 const addDays = (iso, n) => { const d = new Date(`${iso}T12:00:00`); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
 const daysBetween = (a, b) => Math.round((new Date(`${b}T12:00:00`) - new Date(`${a}T12:00:00`)) / 864e5);
@@ -20,6 +22,7 @@ function defaults() {
     abilities: {},
     homebrew: [],
     settings: { webhook: '', autoPost: true, strategy: 'max' },
+    section: 'market',
     mode: 'buyMagic',
     forms: {
       buyMagic: { itemName: '', rarity: 'uncommon', consumable: false, days: 7, gp: 100, price: '', basePrice: '', date: t },
@@ -120,7 +123,7 @@ function renderCharacter() {
   $('#character').innerHTML = `
     <h2><span class="glyph">⚜</span> Adventurer</h2>
     <div class="grid2">
-      <label class="field">Character<input type="text" data-bind="character.name" value="${esc(c.name)}" placeholder="Name" autocomplete="off"></label>
+      <label class="field">Character<input type="text" data-bind="character.name" value="${esc(c.name)}" placeholder="Name" list="roster-names" autocomplete="off"></label>
       <label class="field">Player (Discord)<input type="text" data-bind="character.player" value="${esc(c.player)}" placeholder="@handle" autocomplete="off"></label>
     </div>
     <div class="grid4">
@@ -242,6 +245,19 @@ function renderSettings(status = '') {
       <span class="status ${ok ? 'ok' : s.webhook ? 'bad' : ''}" id="webhook-status">${status || (ok ? '● Webhook looks valid' : s.webhook ? '● Not a Discord webhook URL' : '○ Not connected')}</span>
       <button type="button" class="btn ghost" data-action="test-webhook" ${ok ? '' : 'disabled'}>Send test</button>
     </div>`;
+}
+
+// ---------- Sections ----------
+
+const SECTIONS = ['market', 'xp', 'factions'];
+function showSection() {
+  if (!SECTIONS.includes(state.section)) state.section = 'market';
+  for (const s of SECTIONS) $(`#view-${s}`).hidden = s !== state.section;
+  for (const b of document.querySelectorAll('#sections .mode')) {
+    const on = b.dataset.section === state.section;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-selected', on);
+  }
 }
 
 // ---------- Render: main ----------
@@ -518,15 +534,6 @@ function renderHistory() {
 
 // ---------- Actions ----------
 
-function toast(msg, kind = '') {
-  const t = document.createElement('div');
-  t.className = `toast ${kind}`;
-  t.textContent = msg;
-  $('#toasts').appendChild(t);
-  setTimeout(() => t.classList.add('out'), 3200);
-  setTimeout(() => t.remove(), 3800);
-}
-
 function doRoll() {
   const { block } = getIssues();
   if (block.length) { toast(block[0], 'bad'); return; }
@@ -643,6 +650,7 @@ document.addEventListener('click', async (ev) => {
   const a = b.dataset.action;
   const rec = b.dataset.id ? state.history.find((r) => r.id === b.dataset.id) : null;
   switch (a) {
+    case 'section': state.section = b.dataset.section; save(); showSection(); break;
     case 'mode': state.mode = b.dataset.mode; save(); renderModes(); renderObjective(); refreshDerived(); break;
     case 'roll': doRoll(); break;
     case 'set-bonus': state.forms[state.mode].gp = Number(b.dataset.gp); save(); renderObjective(); refreshDerived(); break;
@@ -692,3 +700,8 @@ renderObjective();
 renderHistory();
 renderResult(state.history.find((r) => r.id === state.lastResultId) || null);
 refreshDerived();
+showSection();
+// The Adventurer name field suggests characters from the XP roster.
+xp.onRoster(() => { $('#roster-names').innerHTML = xp.heroes().map((p) => `<option value="${esc(p.name)}"></option>`).join(''); });
+xp.mount($('#view-xp'));
+factions.mount($('#view-factions'));

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>The Gilded Ledger</title>
-  <meta name="description" content="Roll for magic item vendors, crafting materials and loot buyers, spending your abilities automatically and posting the results to Discord.">
+  <meta name="description" content="Roll for magic item vendors, crafting materials and loot buyers, and track the party experience and faction standing.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,3 93,27 93,73 50,97 7,73 7,27' fill='%23d4af6a'/><text x='50' y='64' font-size='42' text-anchor='middle' fill='%23140e09' font-family='serif' font-weight='bold'>20</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,10 +16,16 @@
   <header class="hero">
     <div class="hero-ornament" aria-hidden="true">✦ ━━━━ ⚜ ━━━━ ✦</div>
     <h1>The Gilded Ledger</h1>
-    <p class="tagline">Merchants, rare materials &amp; buyers for your loot</p>
+    <p class="tagline">Markets, experience &amp; faction standing of the company</p>
   </header>
 
-  <main class="layout">
+  <nav class="sections" id="sections" role="tablist" aria-label="Section">
+    <button type="button" role="tab" class="mode" data-action="section" data-section="market"><span class="mode-icon">⚖</span><span class="mode-label">Market</span></button>
+    <button type="button" role="tab" class="mode" data-action="section" data-section="xp"><span class="mode-icon">⚔</span><span class="mode-label">Experience</span></button>
+    <button type="button" role="tab" class="mode" data-action="section" data-section="factions"><span class="mode-icon">⚜</span><span class="mode-label">Factions</span></button>
+  </nav>
+
+  <main class="layout" id="view-market">
     <aside class="side">
       <section class="card" id="character"></section>
       <section class="card" id="abilities"></section>
@@ -67,8 +73,11 @@
       </details>
     </section>
   </main>
+  <section class="tracker" id="view-xp" aria-label="Experience" hidden></section>
+  <section class="tracker" id="view-factions" aria-label="Factions" hidden></section>
+  <datalist id="roster-names"></datalist>
 
-  <footer class="foot">Rolls happen in your browser. Your character, abilities and webhook are saved on this device only.</footer>
+  <footer class="foot">Rolls happen in your browser. Your character, abilities, webhook and DM keys are saved on this device only. Experience and faction standing sync with the table's Google Sheets.</footer>
   <div class="toasts" id="toasts" aria-live="polite"></div>
   <script type="module" src="js/app.js"></script>
 </body>

@@ -2,5 +2,5 @@
   "name": "gilded-ledger",
   "private": true,
   "type": "module",
-  "scripts": { "test": "node --test test/engine.test.mjs" }
+  "scripts": { "test": "node --test" }
 }
