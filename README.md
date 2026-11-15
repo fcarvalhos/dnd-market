@@ -20,6 +20,7 @@ Static site: plain HTML, CSS and JS modules with no build step and no dataset. E
 - **Discord** via a channel webhook. Each post shows the objective, every die, the modifiers and the abilities used.
 - **Experience section:** the party roster with level progress bars, session XP awards and the session log. It syncs with the XP tracker's Google Sheet (`js/xp.js`).
 - **Factions section:** reputation per adventurer, faction relations with ripple effects and a chronicle. It syncs with the faction tracker's Google Sheet (`js/factions.js`), and the Company can be imported from the XP roster.
+- **Travel section** (`js/travel.js`): trace a route on the Faerûn map (0.8 miles per pixel, from the poster's scale bar) and get distance, days and cost by the table's travel rules. Preset and custom travel methods, supplies, DM points of interest, a Discord travel log with the route image, and the daily *Viagens Agitadas* rolls. To share points of interest, deploy `apps-script/travel-pois.gs` and paste its URL into `POI_API` in `js/travel.js`.
 - **DM keys:** both sheets are read-only until the DM enters the key with the *DM key* button. Keys are stored in the browser, never in the code.
 - **Ledger** of every roll, with *Copy record* in the table's registration template.
 
@@ -83,3 +84,7 @@ python -m http.server 5510   # then open http://localhost:5510
 ```
 
 ES modules need a web server. Opening `index.html` straight from disk won't work.
+
+## Map credit
+
+The Faerûn map is the 2001 poster map © Wizards of the Coast, taken from [vectorized-realms](https://github.com/jonovotny/vectorized-realms). The Gilded Ledger is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.

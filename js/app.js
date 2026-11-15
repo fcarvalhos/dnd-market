@@ -5,6 +5,7 @@ import { isWebhook, postRecord, postTest } from './discord.js';
 import { esc, toast } from './sheet.js';
 import * as xp from './xp.js';
 import * as factions from './factions.js';
+import * as travel from './travel.js';
 
 const KEY = 'gilded-ledger-v1';
 const $ = (s) => document.querySelector(s);
@@ -249,7 +250,7 @@ function renderSettings(status = '') {
 
 // ---------- Sections ----------
 
-const SECTIONS = ['market', 'xp', 'factions'];
+const SECTIONS = ['market', 'xp', 'factions', 'travel'];
 function showSection() {
   if (!SECTIONS.includes(state.section)) state.section = 'market';
   for (const s of SECTIONS) $(`#view-${s}`).hidden = s !== state.section;
@@ -705,3 +706,4 @@ showSection();
 xp.onRoster(() => { $('#roster-names').innerHTML = xp.heroes().map((p) => `<option value="${esc(p.name)}"></option>`).join(''); });
 xp.mount($('#view-xp'));
 factions.mount($('#view-factions'));
+travel.mount($('#view-travel'), { webhook: () => state.settings.webhook, character: () => state.character });

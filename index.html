@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@500;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -16,13 +17,14 @@
   <header class="hero">
     <div class="hero-ornament" aria-hidden="true">✦ ━━━━ ⚜ ━━━━ ✦</div>
     <h1>The Gilded Ledger</h1>
-    <p class="tagline">Markets, experience &amp; faction standing of the company</p>
+    <p class="tagline">Markets, experience, factions &amp; travels of the company</p>
   </header>
 
   <nav class="sections" id="sections" role="tablist" aria-label="Section">
     <button type="button" role="tab" class="mode" data-action="section" data-section="market"><span class="mode-icon">⚖</span><span class="mode-label">Market</span></button>
     <button type="button" role="tab" class="mode" data-action="section" data-section="xp"><span class="mode-icon">⚔</span><span class="mode-label">Experience</span></button>
     <button type="button" role="tab" class="mode" data-action="section" data-section="factions"><span class="mode-icon">⚜</span><span class="mode-label">Factions</span></button>
+    <button type="button" role="tab" class="mode" data-action="section" data-section="travel"><span class="mode-icon">🧭</span><span class="mode-label">Travel</span></button>
   </nav>
 
   <main class="layout" id="view-market">
@@ -75,10 +77,12 @@
   </main>
   <section class="tracker" id="view-xp" aria-label="Experience" hidden></section>
   <section class="tracker" id="view-factions" aria-label="Factions" hidden></section>
+  <section class="tracker" id="view-travel" aria-label="Travel" hidden></section>
   <datalist id="roster-names"></datalist>
 
   <footer class="foot">Rolls happen in your browser. Your character, abilities, webhook and DM keys are saved on this device only. Experience and faction standing sync with the table's Google Sheets.</footer>
   <div class="toasts" id="toasts" aria-live="polite"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
