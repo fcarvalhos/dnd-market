@@ -34,7 +34,7 @@ Static site: plain HTML, CSS and JS modules with no build step and no dataset. E
 
 In your server: **Edit Channel → Integrations → Webhooks → New Webhook → Copy Webhook URL**. In the app, paste it into **Discord Raven** and click *Send test*.
 
-The URL is stored only in each user's browser (localStorage), never in the repository. Anyone with a webhook URL can post to that channel, so don't commit it.
+The table's Market and Travel webhooks are built in (`BUILT_IN` in `js/discord.js`), so players paste nothing; a webhook a player pastes overrides them in that browser only. The built-in URLs are public with the site: if a channel gets spammed, delete that webhook in Discord and replace it in the code.
 
 ## Homebrew JSON format
 

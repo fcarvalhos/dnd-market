@@ -1,7 +1,7 @@
 // Travel section: trace a route on the Faerûn map, plan the journey by the table's travel rules,
 // post the travel log to Discord and roll the daily "Viagens Agitadas" events.
 import { esc, uid, toast, getKey, askKey, sheet, shell, tabs, setStatus } from './sheet.js';
-import { isWebhook } from './discord.js';
+import { isWebhook, BUILT_IN } from './discord.js';
 
 const W = 4763;
 const H = 3185;
@@ -86,7 +86,7 @@ const newDraft = () => ({
 let store = { draft: newDraft(), travels: [], settings: { webhook: '', forum: true }, pois: [] };
 const persist = () => { try { localStorage.setItem(STORE, JSON.stringify(store)); } catch { /* storage blocked */ } };
 const canEdit = () => !POI_API || !!getKey(KEY);
-const hook = () => (isWebhook(store.settings.webhook) ? store.settings.webhook.trim() : ctx.webhook());
+const hook = () => (isWebhook(store.settings.webhook) ? store.settings.webhook.trim() : BUILT_IN.travel || ctx.webhook());
 
 // ---------- Map ----------
 
@@ -200,7 +200,7 @@ function renderForm() {
     </div>
     <div class="form-row end"><button type="button" class="btn gold" data-act="create">✉ Create travel &amp; post to Discord</button></div>
     <details class="travel-discord"><summary>Discord channel for travels</summary>
-      <label class="field">Travel channel webhook URL<input type="password" data-set="webhook" value="${esc(store.settings.webhook)}" placeholder="Empty = use the Market's webhook" autocomplete="off" spellcheck="false"></label>
+      <label class="field">Travel channel webhook URL<input type="password" data-set="webhook" value="${esc(store.settings.webhook)}" placeholder="Empty = use the table's travel channel" autocomplete="off" spellcheck="false"></label>
       <label class="check"><input type="checkbox" data-set="forum" ${store.settings.forum ? 'checked' : ''}> It is a forum channel: create one topic per travel</label>
     </details>`;
   summary();
@@ -289,7 +289,7 @@ function dayText(t, e) {
 }
 
 /** Posts to the travel's topic (creating it on the first post in a forum channel). */
-async function post(t, content, file) {
+async function post(t, content, file, retried) {
   const url = hook();
   if (!isWebhook(url)) { t.discord = '○ No Discord webhook set'; return; }
   const title = `${t.character} viaja para ${t.to}`;
@@ -303,6 +303,8 @@ async function post(t, content, file) {
   try {
     const r = await fetch(`${url}?wait=true${t.thread ? `&thread_id=${t.thread}` : ''}`, { method: 'POST', body });
     const j = await r.json().catch(() => ({}));
+    // Discord's 2200xx errors mean the forum / text channel guess was wrong: flip it and try once more.
+    if (!r.ok && !t.thread && !retried && String(j.code).startsWith('2200')) { store.settings.forum = !store.settings.forum; return post(t, content, file, true); }
     if (!r.ok) throw new Error(j.message || `Discord answered ${r.status}`);
     if (store.settings.forum && !t.thread) t.thread = j.channel_id;
     t.discord = 'sent';

@@ -4,6 +4,12 @@ import { MODES } from './flows.js';
 
 const WEBHOOK_RE = /^https:\/\/(?:(?:ptb|canary)\.)?discord(?:app)?\.com\/api\/webhooks\/\d+\/[\w-]+\/?$/;
 export const isWebhook = (url) => WEBHOOK_RE.test(String(url || '').trim());
+// The table's channels, used when a player has not pasted a webhook of their own.
+// These URLs are public with the site: if a channel gets spammed, delete the webhook in Discord and replace it here.
+export const BUILT_IN = {
+  market: 'https://discord.com/api/webhooks/1571683957760852019/UV_YwZ_pN0dUghyPfCmUQ0hiHrtts-Bv9NpXZD5wXV44zLFxY8GgOFhOt1WU2GB8G5nX',
+  travel: 'https://discord.com/api/webhooks/1571643740131430462/2UNwwO2ZS7phESQK8pnb__s0kwrfanGVIiVVpCUnSFZhDCREjwehpSh1uvsu22-viJlf',
+};
 
 const COLORS = { great: 0xf1c40f, success: 0x4caf6a, partial: 0xd9893b, fail: 0xc0392b };
 const clip = (s, n) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);

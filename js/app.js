@@ -1,7 +1,7 @@
 import { RARITIES, rarityOf, searchBonus, staticModifier, SKILLS, SKILL_LABEL, ABILITY_LABEL, fmt, num } from './engine.js';
 import { BUILTIN, defaultMax, parseHomebrew, describeEffect } from './abilities.js';
 import { MODES, runFlow, estimateFlow, buildRecord, recordText, isMagicSale } from './flows.js';
-import { isWebhook, postRecord, postTest } from './discord.js';
+import { isWebhook, postRecord, postTest, BUILT_IN } from './discord.js';
 import { esc, toast } from './sheet.js';
 import * as xp from './xp.js';
 import * as factions from './factions.js';
@@ -48,6 +48,9 @@ function load() {
 let state = load();
 // A new session starts on today's date.
 for (const f of Object.values(state.forms)) f.date = localToday();
+// A player's own webhook wins; otherwise the table's built-in channel.
+const hook = () => (isWebhook(state.settings.webhook) ? state.settings.webhook.trim() : BUILT_IN.market);
+const hookStatus = () => (isWebhook(state.settings.webhook) ? '● Webhook looks valid' : state.settings.webhook ? '● Not a Discord webhook URL' : BUILT_IN.market ? "● Using the table's channel" : '○ Not connected');
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { /* storage blocked: app still works this session */ } };
 
 const getPath = (path) => path.split('.').reduce((o, k) => (o == null ? undefined : o[k]), state);
@@ -231,19 +234,19 @@ function renderHomebrew() {
 
 function renderSettings(status = '') {
   const s = state.settings;
-  const ok = isWebhook(s.webhook);
+  const ok = isWebhook(hook());
   $('#settings').innerHTML = `
     <h2><span class="glyph">✉</span> Discord Raven</h2>
     <label class="field">Channel webhook URL
       <span class="with-btn">
-        <input type="password" data-bind="settings.webhook" data-rerender="settings-status" value="${esc(s.webhook)}" placeholder="https://discord.com/api/webhooks/…" autocomplete="off" spellcheck="false" id="webhook-input">
+        <input type="password" data-bind="settings.webhook" data-rerender="settings-status" value="${esc(s.webhook)}" placeholder="${BUILT_IN.market ? 'Empty = use the table channel' : 'https://discord.com/api/webhooks/…'}" autocomplete="off" spellcheck="false" id="webhook-input">
         <button type="button" class="btn tiny ghost" data-action="toggle-webhook" aria-label="Show or hide the webhook URL">👁</button>
       </span>
     </label>
-    <p class="hint">In Discord: <em>Edit Channel → Integrations → Webhooks → New Webhook → Copy URL</em>. It's saved only in this browser, never in the code.</p>
+    <p class="hint">In Discord: <em>Edit Channel → Integrations → Webhooks → New Webhook → Copy URL</em>. Only needed to post to a different channel. Yours is saved only in this browser.</p>
     <label class="check"><input type="checkbox" data-bind="settings.autoPost" data-type="bool" ${s.autoPost ? 'checked' : ''}> Post every roll automatically</label>
     <div class="row-between">
-      <span class="status ${ok ? 'ok' : s.webhook ? 'bad' : ''}" id="webhook-status">${status || (ok ? '● Webhook looks valid' : s.webhook ? '● Not a Discord webhook URL' : '○ Not connected')}</span>
+      <span class="status ${s.webhook && !isWebhook(s.webhook) ? 'bad' : ok ? 'ok' : ''}" id="webhook-status">${status || hookStatus()}</span>
       <button type="button" class="btn ghost" data-action="test-webhook" ${ok ? '' : 'disabled'}>Send test</button>
     </div>`;
 }
@@ -500,7 +503,7 @@ function renderResult(rec, animate = false) {
       <span id="result-discord">${discordStatus(rec)}</span>
       <span class="btns">
         <button type="button" class="btn ghost" data-action="copy" data-id="${rec.id}">⎘ Copy record</button>
-        <button type="button" class="btn gold" data-action="post" data-id="${rec.id}" ${isWebhook(state.settings.webhook) ? '' : 'disabled title="Add a webhook in Discord Raven first"'}>✉ Post to Discord</button>
+        <button type="button" class="btn gold" data-action="post" data-id="${rec.id}" ${isWebhook(hook()) ? '' : 'disabled title="Add a webhook in Discord Raven first"'}>✉ Post to Discord</button>
       </span>
     </div>`;
   if (animate) {
@@ -552,14 +555,14 @@ function doRoll() {
   renderAbilities();
   renderHistory();
   refreshDerived();
-  if (state.settings.autoPost && isWebhook(state.settings.webhook)) postRec(rec);
+  if (state.settings.autoPost && isWebhook(hook())) postRec(rec);
 }
 
 async function postRec(rec) {
   rec.discord = { status: 'sending' };
   updateDiscordViews(rec);
   try {
-    await postRecord(state.settings.webhook, rec);
+    await postRecord(hook(), rec);
     rec.discord = { status: 'sent', at: Date.now() };
     toast('Raven delivered to Discord ✉', 'ok');
   } catch (e) {
@@ -615,10 +618,10 @@ function rerender(what) {
       renderObjective();
     }
     if (w === 'settings-status') {
-      const ok = isWebhook(state.settings.webhook);
+      const ok = isWebhook(hook());
       const st = $('#webhook-status');
-      st.className = `status ${ok ? 'ok' : state.settings.webhook ? 'bad' : ''}`;
-      st.textContent = ok ? '● Webhook looks valid' : state.settings.webhook ? '● Not a Discord webhook URL' : '○ Not connected';
+      st.className = `status ${state.settings.webhook && !isWebhook(state.settings.webhook) ? 'bad' : ok ? 'ok' : ''}`;
+      st.textContent = hookStatus();
       $('[data-action="test-webhook"]').disabled = !ok;
       const pb = $('[data-action="post"]');
       if (pb) pb.disabled = !ok;
@@ -664,7 +667,7 @@ document.addEventListener('click', async (ev) => {
     case 'show-format': ev.preventDefault(); $('#format-guide').hidden = !$('#format-guide').hidden; break;
     case 'toggle-webhook': { const i = $('#webhook-input'); i.type = i.type === 'password' ? 'text' : 'password'; break; }
     case 'test-webhook':
-      try { await postTest(state.settings.webhook, state.character.name); toast('Test raven delivered ✉', 'ok'); renderSettings('● Connected, test message sent'); } catch (e) { toast(e.message, 'bad'); renderSettings(`● ${e.message}`); }
+      try { await postTest(hook(), state.character.name); toast('Test raven delivered ✉', 'ok'); renderSettings('● Connected, test message sent'); } catch (e) { toast(e.message, 'bad'); renderSettings(`● ${e.message}`); }
       break;
     case 'post': if (rec) postRec(rec); break;
     case 'copy': if (rec) { await copyText(recordText(rec)); toast('Record copied in the table template format', 'ok'); } break;
@@ -706,4 +709,4 @@ showSection();
 xp.onRoster(() => { $('#roster-names').innerHTML = xp.heroes().map((p) => `<option value="${esc(p.name)}"></option>`).join(''); });
 xp.mount($('#view-xp'));
 factions.mount($('#view-factions'));
-travel.mount($('#view-travel'), { webhook: () => state.settings.webhook, character: () => state.character });
+travel.mount($('#view-travel'), { webhook: hook, character: () => state.character });
